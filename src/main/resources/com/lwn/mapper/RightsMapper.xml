@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lwn.mapper.RightsMapper">
+    <!-- 通过roleId查询对应的权限 -->
+    <select id="selectByRole" resultType="com.lwn.entity.Rights">
+        SELECT
+            r.id,
+            r.auth_name,
+            r.icon,
+            r.parent_id,
+            r.path,
+            GROUP_CONCAT(o.operation ORDER BY o.operation SEPARATOR ',') AS rights
+        FROM
+            role_rights rr
+                LEFT JOIN
+            rights r ON rr.rights_id = r.id
+                LEFT JOIN
+            roles_rights_operation rro ON rr.id = rro.role_rights_id
+                LEFT JOIN
+            operation o ON rro.operation_id = o.id
+        WHERE
+            rr.role_id = #{id}
+-- 如果除聚合函数列以外，还有其他的列，则必须使用group by
+        GROUP BY
+            r.id, r.auth_name, r.icon, r.parent_id, r.path;
+    </select>
+</mapper>
